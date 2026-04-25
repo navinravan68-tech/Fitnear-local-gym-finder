@@ -1,0 +1,6 @@
+{
+  "name": "FitNear",
+  "description": "Premium local gym finder app for India, helping you find nearby gyms, compare plans, and book trials.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["AI Recommendations", "Real-time Crowd Indicator"]
+}

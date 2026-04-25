@@ -1,0 +1,123 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "userType": { "type": "string", "enum": ["customer", "owner", "admin"] },
+        "phoneNumber": { "type": "string" },
+        "fitnessGoals": { "type": "array", "items": { "type": "string" } },
+        "savedGyms": { "type": "array", "items": { "type": "string" } },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "userType"]
+    },
+    "Gym": {
+      "title": "Gym",
+      "description": "Gym details and facilities",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "address": { "type": "string" },
+        "city": { "type": "string" },
+        "location": { "type": "object", "properties": { "lat": { "type": "number" }, "lng": { "type": "number" } } },
+        "category": { "type": "string", "enum": ["budget", "premium", "ladies", "crossfit", "yoga"] },
+        "images": { "type": "array", "items": { "type": "string" } },
+        "rating": { "type": "number" },
+        "startingPrice": { "type": "number" },
+        "status": { "type": "string", "enum": ["open", "closed"] },
+        "facilities": { "type": "array", "items": { "type": "string" } },
+        "instagram": { "type": "string" },
+        "whatsapp": { "type": "string" },
+        "crowdStatus": { "type": "string", "enum": ["low", "moderate", "heavy"] },
+        "plans": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "price": { "type": "number" },
+              "duration": { "type": "string" }
+            }
+          }
+        },
+        "trainers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "specialty": { "type": "string" },
+              "image": { "type": "string" }
+            }
+          }
+        },
+        "isApproved": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["ownerId", "name", "category", "startingPrice"]
+    },
+    "Booking": {
+      "title": "Booking",
+      "description": "Trial or membership bookings",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "gymId": { "type": "string" },
+        "type": { "type": "string", "enum": ["trial", "membership"] },
+        "planName": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "confirmed", "cancelled"] },
+        "date": { "type": "string", "format": "date-time" },
+        "paymentId": { "type": "string" }
+      },
+      "required": ["userId", "gymId", "type", "status"]
+    },
+    "Review": {
+      "title": "Review",
+      "description": "User reviews for gyms",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userPhoto": { "type": "string" },
+        "gymId": { "type": "string" },
+        "rating": { "type": "number" },
+        "comment": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "gymId", "rating"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "/gyms/{gymId}": {
+      "schema": "Gym",
+      "description": "Gym listings"
+    },
+    "/bookings/{bookingId}": {
+      "schema": "Booking",
+      "description": "Booking records"
+    },
+    "/reviews/{reviewId}": {
+      "schema": "Review",
+      "description": "Gym reviews"
+    },
+    "/admins/{userId}": {
+      "schema": { "type": "object", "properties": { "uid": { "type": "string" } } },
+      "description": "Admin list"
+    }
+  }
+}

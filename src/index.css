@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Outfit", sans-serif;
+  
+  --color-neon-accent: #c6ff00;
+  --color-dark-bg: #060606;
+  --color-card-bg: #18181b; /* zinc-900 equivalent */
+  --color-card-border: #27272a; /* zinc-800 equivalent */
+}
+
+@layer base {
+  body {
+    @apply bg-dark-bg text-zinc-100 font-sans;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-neon-accent text-black font-bold py-4 px-6 rounded-2xl transition-all hover:opacity-90 active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-neon-accent/20;
+  }
+  
+  .btn-secondary {
+    @apply bg-zinc-800 text-zinc-100 border border-zinc-700 font-bold py-4 px-6 rounded-2xl transition-all hover:bg-zinc-700 active:scale-95 flex items-center justify-center gap-2;
+  }
+  
+  .input-field {
+    @apply bg-zinc-800 border-none rounded-2xl px-4 py-4 text-zinc-100 focus:outline-none focus:ring-1 focus:ring-neon-accent transition-all placeholder:text-zinc-500;
+  }
+  
+  .glass-card {
+    @apply bg-zinc-900/50 backdrop-blur-md border border-zinc-800 rounded-[32px] p-5;
+  }
+}
+
+.animate-pop-up {
+  animation: popUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes popUp {
+  0% { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+

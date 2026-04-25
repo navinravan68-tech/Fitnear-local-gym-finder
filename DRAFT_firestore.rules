@@ -1,0 +1,68 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+    function isAdmin() { return isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+
+    // --- Validations ---
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email', 'userType']) &&
+             data.uid == request.auth.uid &&
+             data.email is string &&
+             data.userType in ['customer', 'owner', 'admin'];
+    }
+
+    function isValidGym(data) {
+      return data.keys().hasAll(['ownerId', 'name', 'category', 'startingPrice']) &&
+             data.ownerId == request.auth.uid &&
+             data.name is string && data.name.size() <= 100 &&
+             data.startingPrice is number && data.startingPrice >= 0;
+    }
+
+    // --- Rules ---
+
+    match /users/{userId} {
+      allow get: if isSignedIn();
+      allow list: if isAdmin();
+      allow create: if isOwner(userId) && isValidUser(incoming());
+      allow update: if isOwner(userId) && 
+                      isValidUser(incoming()) && 
+                      incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'phoneNumber', 'fitnessGoals', 'savedGyms']);
+    }
+
+    match /gyms/{gymId} {
+      allow read: if true; // Public listings
+      allow create: if isSignedIn() && isValidGym(incoming());
+      allow update: if (isAdmin() || (isOwner(existing().ownerId) && isValidGym(incoming()))) &&
+                      (isAdmin() || incoming().diff(existing()).affectedKeys().hasOnly(['name', 'description', 'address', 'city', 'location', 'category', 'images', 'rating', 'startingPrice', 'status', 'facilities', 'instagram', 'whatsapp', 'crowdStatus', 'plans', 'trainers']));
+      allow delete: if isAdmin() || isOwner(existing().ownerId);
+    }
+
+    match /bookings/{bookingId} {
+      allow read: if isSignedIn() && (isOwner(resource.data.userId) || isOwner(get(/databases/$(database)/documents/gyms/$(resource.data.gymId)).data.ownerId));
+      allow create: if isSignedIn() && isOwner(incoming().userId);
+      allow update: if isSignedIn() && (isOwner(existing().userId) || isOwner(get(/databases/$(database)/documents/gyms/$(existing().gymId)).data.ownerId));
+    }
+
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if isSignedIn() && isOwner(incoming().userId);
+      allow update: if isOwner(existing().userId) && incoming().diff(existing()).affectedKeys().hasOnly(['rating', 'comment']);
+      allow delete: if isAdmin() || isOwner(existing().userId);
+    }
+
+    match /admins/{userId} {
+      allow read: if isSignedIn();
+    }
+  }
+}
